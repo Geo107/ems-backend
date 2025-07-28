@@ -1,9 +1,11 @@
 package com.geom.ems.service.impl;
 
 import com.geom.ems.dto.EmployeeDto;
+import com.geom.ems.entity.Department;
 import com.geom.ems.entity.Employee;
 import com.geom.ems.exception.ResourceNotFoundException;
 import com.geom.ems.mapper.EmployeeMapper;
+import com.geom.ems.repository.DepartmentRepo;
 import com.geom.ems.repository.EmployeeRepo;
 import com.geom.ems.service.EmployeeService;
 import lombok.AllArgsConstructor;
@@ -17,10 +19,14 @@ import java.util.List;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private EmployeeRepo employeeRepo;
+    private DepartmentRepo departmentRepo;
 
     @Override
     public EmployeeDto createEmployee(EmployeeDto employeeDto) {
         Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
+        Department department = departmentRepo.findById(employeeDto.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Dept_id NOT FOUND" + employeeDto.getDepartmentId()));
+        employee.setDepartment(department);
         Employee savedEmployee = employeeRepo.save(employee);
         return EmployeeMapper.maptToEmployeeDto(savedEmployee);
     }
@@ -48,6 +54,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setFirstName(updatedEmployee.getFirstName());
         employee.setLastName(updatedEmployee.getLastName());
         employee.setEmail(updatedEmployee.getEmail());
+
+        Department department = departmentRepo.findById(updatedEmployee.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Dept_id NOT FOUND" + updatedEmployee.getDepartmentId()));
+        employee.setDepartment(department);
 
         Employee updatedEmployeeObj = employeeRepo.save(employee);
 
